@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:id="rootPane"
+           fx:controller="vn.phenikaa.controller.MainController">
+
+    <BorderPane prefWidth="900" prefHeight="600">
+
+        <top>
+            <HBox spacing="10" style="-fx-padding: 10;">
+                <TextField fx:id="txtSearch"
+                           promptText="Nhập mã NV hoặc họ tên"/>
+                <Button text="🔍 Tìm" onAction="#search"/>
+                <Button text="📋 Tất cả" onAction="#loadData"/>
+            </HBox>
+        </top>
+
+        <left>
+            <VBox spacing="10" style="-fx-padding: 15;">
+                <Button text="➕ Thêm Giảng Viên"
+                        onAction="#themGiangVien"/>
+                <Button text="➕ Thêm Nhân Viên"
+                        onAction="#themNhanVien"/>
+            </VBox>
+        </left>
+
+        <center>
+            <TableView fx:id="table">
+                <columns>
+                    <TableColumn fx:id="colMa" text="Mã NV"/>
+                    <TableColumn fx:id="colTen" text="Họ tên"/>
+                    <TableColumn fx:id="colLoai" text="Loại"/>
+                    <TableColumn fx:id="colLuong" text="Lương"/>
+                    <TableColumn fx:id="colAction" text="Thao tác"/>
+                </columns>
+            </TableView>
+        </center>
+
+    </BorderPane>
+
+</StackPane>
