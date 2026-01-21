@@ -5,40 +5,91 @@
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
            fx:id="rootPane"
-           fx:controller="vn.phenikaa.controller.MainController">
+           fx:controller="vn.phenikaa.controller.MainController"
+           stylesheets="@main.css">
 
-    <BorderPane prefWidth="900" prefHeight="600">
+    <BorderPane prefWidth="1000" prefHeight="650">
 
+        <!-- ================= HEADER ================= -->
         <top>
-            <HBox spacing="10" style="-fx-padding: 10;">
+            <HBox spacing="12"
+                  alignment="CENTER_LEFT"
+                  styleClass="header">
+
+                <Label text="QUẢN LÝ NHÂN SỰ"
+                       styleClass="title"/>
+
+                <ComboBox fx:id="cboTruong"
+                          promptText="Chọn Trường"
+                          prefWidth="220"/>
+
+                <Region HBox.hgrow="ALWAYS"/>
+
                 <TextField fx:id="txtSearch"
-                           promptText="Nhập mã NV hoặc họ tên"/>
-                <Button text="🔍 Tìm" onAction="#search"/>
-                <Button text="📋 Tất cả" onAction="#loadData"/>
+                           promptText="Nhập mã NV hoặc họ tên"
+                           styleClass="search-field"/>
+
+                <Button text="Tìm"
+                        onAction="#search"
+                        styleClass="btn-primary"/>
+
+                <Button text="Tất cả"
+                        onAction="#tatCa"
+                        styleClass="btn-secondary"/>
             </HBox>
         </top>
 
+        <!-- ================= SIDEBAR ================= -->
         <left>
-            <VBox spacing="10" style="-fx-padding: 15;">
+            <VBox spacing="12" styleClass="sidebar">
+
+                <Label text="CHỨC NĂNG"
+                       styleClass="sidebar-title"/>
+
+                <Button text="➕ Thêm Trường"
+                        onAction="#themTruong"
+                        styleClass="btn-menu"/>
+
                 <Button text="➕ Thêm Giảng Viên"
-                        onAction="#themGiangVien"/>
+                        onAction="#themGiangVien"
+                        styleClass="btn-menu"/>
+
                 <Button text="➕ Thêm Nhân Viên"
-                        onAction="#themNhanVien"/>
+                        onAction="#themNhanVien"
+                        styleClass="btn-menu"/>
             </VBox>
         </left>
 
+        <!-- ================= CONTENT ================= -->
         <center>
-            <TableView fx:id="table">
-                <columns>
-                    <TableColumn fx:id="colMa" text="Mã NV"/>
-                    <TableColumn fx:id="colTen" text="Họ tên"/>
-                    <TableColumn fx:id="colLoai" text="Loại"/>
-                    <TableColumn fx:id="colLuong" text="Lương"/>
-                    <TableColumn fx:id="colAction" text="Thao tác"/>
-                </columns>
-            </TableView>
+            <VBox spacing="10" styleClass="content">
+
+                <!-- ===== TAB ===== -->
+                <TabPane fx:id="tabPane">
+                    <Tab fx:id="tabAll" text="Tất cả" closable="false"/>
+                    <Tab fx:id="tabGV" text="Giảng viên" closable="false"/>
+                    <Tab fx:id="tabNV" text="Nhân viên" closable="false"/>
+                </TabPane>
+
+
+                <!-- ===== TABLE ===== -->
+                <TableView fx:id="table" prefHeight="520">
+
+                    <columns>
+                        <TableColumn fx:id="colMa" text="Mã NV" prefWidth="120"/>
+                        <TableColumn fx:id="colTen" text="Họ tên" prefWidth="200"/>
+                        <TableColumn fx:id="colEmailTruong"
+                                     text="Email trường"
+                                     prefWidth="250"/>
+                        <TableColumn fx:id="colLoai" text="Loại" prefWidth="120"/>
+                        <TableColumn fx:id="colLuong" text="Lương" prefWidth="120"/>
+                        <TableColumn fx:id="colAction" text="Thao tác" prefWidth="120"/>
+                    </columns>
+
+                </TableView>
+
+            </VBox>
         </center>
 
     </BorderPane>
-
 </StackPane>

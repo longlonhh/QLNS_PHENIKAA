@@ -1,71 +1,81 @@
 package vn.phenikaa.person;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+
+import vn.phenikaa.organization.Truong;
 
 public abstract class NhanSu {
 
     protected String maNV;
     protected String hoTen;
     protected LocalDate ngaySinh;
-    protected String soDienThoai;
-    protected String queQuan;
     protected String email;
     protected Double luongCoBan;
+    protected Truong truong;
 
-    public static final DateTimeFormatter FORMAT =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-    public NhanSu(String hoTen, LocalDate ngaySinh,
-                  String soDienThoai, String queQuan,
-                  Double luongCoBan) {
-
+    // ===== CONSTRUCTOR =====
+    public NhanSu(String hoTen, LocalDate ngaySinh, String email) {
         this.hoTen = hoTen;
         this.ngaySinh = ngaySinh;
-        this.soDienThoai = soDienThoai;
-        this.queQuan = queQuan;
-        this.luongCoBan = luongCoBan;
+        this.email = email;
     }
 
-    // ===== GET =====
-    public String getMaNV() { return maNV; }
-    public String getHoTen() { return hoTen; }
-    public LocalDate getNgaySinh() { return ngaySinh; }
-    public String getSoDienThoai() { return soDienThoai; }
-    public String getQueQuan() { return queQuan; }
-    public String getEmail() { return email; }
-    public Double getLuongCoBan() { return luongCoBan; }
+    // ===== ABSTRACT =====
+    public abstract double tinhLuong();
 
-    // ===== SET =====
+    // ===== GET / SET =====
+    public String getMaNV() {
+        return maNV;
+    }
+
     public void setMaNV(String maNV) {
         this.maNV = maNV;
-        this.email = maNV + "@st.phenikaa-uni.edu.vn";
+    }
+
+    public String getHoTen() {
+        return hoTen;
     }
 
     public void setHoTen(String hoTen) {
         this.hoTen = hoTen;
     }
 
+    public LocalDate getNgaySinh() {
+        return ngaySinh;
+    }
+
     public void setNgaySinh(LocalDate ngaySinh) {
         this.ngaySinh = ngaySinh;
     }
 
-    // 🔥🔥🔥 CÁI QUAN TRỌNG NHẤT (BẠN THIẾU)
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Double getLuongCoBan() {
+        return luongCoBan;
+    }
+
     public void setLuongCoBan(Double luongCoBan) {
         this.luongCoBan = luongCoBan;
     }
 
-    // ===== ABSTRACT =====
-    public abstract Double tinhLuong();
-
-    // ===== DISPLAY =====
-    public void hienThi() {
-        System.out.println("Ma NV       : " + maNV);
-        System.out.println("Ho ten      : " + hoTen);
-        System.out.println("Ngay sinh   : " + ngaySinh.format(FORMAT));
-        System.out.println("So DT       : " + soDienThoai);
-        System.out.println("Que quan    : " + queQuan);
-        System.out.println("Email       : " + email);
-        System.out.println("Luong co ban: " + luongCoBan);
+    public Truong getTruong() {
+        return truong;
     }
+
+    public void setTruong(Truong truong) {
+        this.truong = truong;
+    }
+
+    public String getEmailTruong() {
+    if (maNV == null || maNV.isBlank()) return "";
+    return maNV.toLowerCase() + "@st.phenikaa-uni.edu.vn";
+}
+
+
 }

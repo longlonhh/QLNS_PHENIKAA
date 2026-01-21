@@ -1,0 +1,75 @@
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-background-color: #f4f6f9;
+}
+
+/* Layout */
+.main-layout {
+    -fx-background-color: white;
+}
+
+/* Header */
+.header {
+    -fx-padding: 12 20;
+    -fx-background-color: #1e40af;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.title {
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.search-field {
+    -fx-pref-width: 220;
+    -fx-background-radius: 8;
+}
+
+/* Sidebar */
+.sidebar {
+    -fx-padding: 20;
+    -fx-spacing: 12;
+    -fx-background-color: #f1f5f9;
+    -fx-pref-width: 220;
+}
+
+.sidebar-title {
+    -fx-font-size: 14;
+    -fx-font-weight: bold;
+}
+
+/* Buttons */
+.btn-primary {
+    -fx-background-color: #2563eb;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+}
+
+.btn-secondary {
+    -fx-background-color: #64748b;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+}
+
+.btn-menu {
+    -fx-background-color: transparent;
+    -fx-text-fill: #1e293b;
+    -fx-font-size: 14;
+    -fx-alignment: CENTER_LEFT;
+}
+
+.btn-menu:hover {
+    -fx-background-color: #e2e8f0;
+}
+
+/* Content */
+.content {
+    -fx-padding: 15;
+}
+
+/* Table */
+.table-view {
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+}

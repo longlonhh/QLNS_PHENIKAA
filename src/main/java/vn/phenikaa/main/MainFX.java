@@ -15,9 +15,14 @@ public class MainFX extends Application {
             getClass().getResource("/vn/phenikaa/ui/MainView.fxml")
         );
 
-        Parent root = loader.load();   // ✅ KHÔNG cast
+        Parent root = loader.load();
 
-        Scene scene = new Scene(root, 900, 600);
+        Scene scene = new Scene(root, 1000, 650);
+
+        // 🔥 GẮN CSS (QUAN TRỌNG)
+        scene.getStylesheets().add(
+            getClass().getResource("/css/style.css").toExternalForm()
+        );
 
         stage.setTitle("QUẢN LÝ NHÂN SỰ - PHENIKAA");
         stage.setScene(scene);

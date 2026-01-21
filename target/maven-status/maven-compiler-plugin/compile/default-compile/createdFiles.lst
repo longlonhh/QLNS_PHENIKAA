@@ -1,4 +1,5 @@
 vn\phenikaa\database\NhanSuDAO.class
+vn\phenikaa\database\TruongDAO.class
 vn\phenikaa\database\DBConnection.class
 vn\phenikaa\person\GiangVien.class
 vn\phenikaa\controller\MainController$1.class

@@ -4,28 +4,32 @@ import java.time.LocalDate;
 
 public class NhanVien extends NhanSu {
 
-    private double phuCap;
+    private Double phuCap;
 
-    private static final double LUONG_CO_BAN = 8_000_000.0;
-
-    public NhanVien(String hoTen, LocalDate ngaySinh,
-                    String soDienThoai, String queQuan,
-                    double phuCap) {
-
-        super(hoTen, ngaySinh, soDienThoai, queQuan, LUONG_CO_BAN);
+    // ===== CONSTRUCTOR (KHỚP MainController) =====
+    public NhanVien(
+            String hoTen,
+            LocalDate ngaySinh,
+            String email,
+            Double phuCap
+    ) {
+        super(hoTen, ngaySinh, email);
         this.phuCap = phuCap;
     }
 
-    public double getPhuCap() {
+    // ===== TÍNH LƯƠNG =====
+    @Override
+    public double tinhLuong() {
+        if (luongCoBan == null) return 0;
+        return luongCoBan + (phuCap != null ? phuCap : 0);
+    }
+
+    // ===== GET / SET =====
+    public Double getPhuCap() {
         return phuCap;
     }
 
-    public void setPhuCap(double phuCap) {
+    public void setPhuCap(Double phuCap) {
         this.phuCap = phuCap;
-    }
-
-    @Override
-    public Double tinhLuong() {
-        return luongCoBan + phuCap;
     }
 }

@@ -1,5 +1,8 @@
 package vn.phenikaa.controller;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import javafx.animation.PauseTransition;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -10,28 +13,32 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import vn.phenikaa.database.NhanSuDAO;
+import vn.phenikaa.database.TruongDAO;
+import vn.phenikaa.organization.Truong;
 import vn.phenikaa.person.GiangVien;
 import vn.phenikaa.person.NhanSu;
 import vn.phenikaa.person.NhanVien;
 
-
-
 public class MainController {
 
+    // ================= UI =================
     @FXML private StackPane rootPane;
     @FXML private TableView<NhanSu> table;
     @FXML private TableColumn<NhanSu, String> colMa;
@@ -40,57 +47,126 @@ public class MainController {
     @FXML private TableColumn<NhanSu, Double> colLuong;
     @FXML private TableColumn<NhanSu, Void> colAction;
     @FXML private TextField txtSearch;
+    @FXML private ComboBox<Truong> cboTruong;
+    @FXML private TabPane tabPane;
+    @FXML private Tab tabGV;
+    @FXML private Tab tabNV;
+    @FXML private Tab tabAll;
 
-    private final NhanSuDAO dao = new NhanSuDAO();
+
+    // ================= DAO =================
+    private final NhanSuDAO nhanSuDAO = new NhanSuDAO();
+    private final TruongDAO truongDAO = new TruongDAO();
+
     private NhanSu lastDeleted;
 
+    // ================= INIT =================
     @FXML
-    public void initialize() {
+public void initialize() {
 
-        colMa.setCellValueFactory(d ->
+    // ================= TABLE COLUMNS =================
+    colMa.setCellValueFactory(d ->
             new SimpleStringProperty(d.getValue().getMaNV())
-        );
+    );
 
-        colTen.setCellValueFactory(d ->
+    colTen.setCellValueFactory(d ->
             new SimpleStringProperty(d.getValue().getHoTen())
-        );
+    );
 
-        colLoai.setCellValueFactory(d ->
+    colEmailTruong.setCellValueFactory(d ->
+            new SimpleStringProperty(d.getValue().getEmailTruong())
+    );
+
+    colLoai.setCellValueFactory(d ->
             new SimpleStringProperty(
-                d.getValue().getClass().getSimpleName()
+                    d.getValue() instanceof GiangVien
+                            ? "Giảng viên"
+                            : "Nhân viên"
             )
-        );
+    );
 
-        colLuong.setCellValueFactory(d ->
+    colLuong.setCellValueFactory(d ->
             new SimpleObjectProperty<>(d.getValue().tinhLuong())
+    );
+
+    // ================= DISABLE MENU KHI CHƯA CHỌN TRƯỜNG =================
+    cboTruong.valueProperty().addListener((obs, oldV, newV) -> {
+        boolean disable = (newV == null);
+
+        rootPane.lookupAll(".btn-menu").forEach(n -> {
+            if (n instanceof Button b && !b.getText().contains("Trường")) {
+                b.setDisable(disable);
+            }
+        });
+
+        // khi đổi trường → load lại bảng
+        reloadTable();
+    });
+
+    // ================= TAB CHANGE =================
+    tabPane.getSelectionModel()
+            .selectedItemProperty()
+            .addListener((obs, oldTab, newTab) -> reloadTable());
+
+    // ================= ACTION COLUMN =================
+    setupActionColumn();
+
+    // ================= LOAD TRƯỜNG =================
+    loadTruong();
+}
+
+
+    // ================= TRƯỜNG =================
+    private void loadTruong() {
+        cboTruong.setItems(
+            FXCollections.observableArrayList(truongDAO.getAll())
         );
 
-        addActionButtons();
-        loadData();
+        cboTruong.getSelectionModel().selectedItemProperty()
+            .addListener((obs, o, n) -> loadNhanSuTheoTruong());
     }
 
+    private void loadNhanSuTheoTruong() {
+    reloadTable();
+}
+
+
+    // ================= SEARCH =================
     @FXML
-    public void loadData() {
-        table.setItems(
-            FXCollections.observableArrayList(dao.getAll())
-        );
+private void search() {
+
+    Truong t = cboTruong.getValue();
+    if (t == null) return;
+
+    String keyword = txtSearch.getText().trim().toLowerCase();
+
+    List<NhanSu> ds = nhanSuDAO.getByTruong(t.getId());
+
+    // 🔥 LỌC THEO TAB TRƯỚC
+    ds = filterByTab(ds);
+
+    // 🔥 SAU ĐÓ MỚI TÌM
+    if (!keyword.isEmpty()) {
+        ds = ds.stream()
+                .filter(ns ->
+                        ns.getMaNV().toLowerCase().contains(keyword) ||
+                        ns.getHoTen().toLowerCase().contains(keyword)
+                )
+                .toList();
     }
 
-    @FXML
-    public void search() {
-        table.setItems(
-            FXCollections.observableArrayList(
-                dao.search(txtSearch.getText().trim())
-            )
-        );
-    }
+    table.setItems(FXCollections.observableArrayList(ds));
+}
 
-    private void addActionButtons() {
+
+    // ================= ACTION COLUMN =================
+    private void setupActionColumn() {
 
         colAction.setCellFactory(col -> new TableCell<>() {
 
             private final Button btnSua = new Button("✏");
             private final Button btnXoa = new Button("❌");
+            private final HBox box = new HBox(6, btnSua, btnXoa);
 
             {
                 btnSua.setOnAction(e -> {
@@ -102,185 +178,306 @@ public class MainController {
                     NhanSu ns = getTableRow().getItem();
                     if (ns == null) return;
 
-                    Alert cf = new Alert(Alert.AlertType.CONFIRMATION);
-                    cf.setTitle("Xác nhận");
-                    cf.setHeaderText(null);
-                    cf.setContentText("Xóa nhân sự " + ns.getMaNV() + "?");
+                    if (new Alert(
+                        Alert.AlertType.CONFIRMATION,
+                        "Xóa " + ns.getMaNV() + " ?",
+                        ButtonType.OK, ButtonType.CANCEL
+                    ).showAndWait().orElse(ButtonType.CANCEL)
+                        != ButtonType.OK) return;
 
-                    if (cf.showAndWait().orElse(ButtonType.CANCEL)
-                            != ButtonType.OK) return;
-
-                    if (dao.delete(ns.getMaNV())) {
-                        lastDeleted = ns;
-                        table.getItems().remove(ns);
-                        showUndoToast();
-                    }
+                    nhanSuDAO.delete(ns.getMaNV());
+                    lastDeleted = ns;
+                    loadNhanSuTheoTruong();
+                    showUndoToast();
                 });
             }
 
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : new HBox(5, btnSua, btnXoa));
+                setGraphic(empty ? null : box);
             }
         });
     }
 
+    // ================= UNDO TOAST =================
     private void showUndoToast() {
 
-    Label msg = new Label("✔ Đã xóa");
-    Button undo = new Button("UNDO");
+        Label msg = new Label("✔ Đã xóa");
+        Button undo = new Button("UNDO");
 
-    Region spacer = new Region();
-    HBox.setHgrow(spacer, Priority.ALWAYS);
+        HBox toast = new HBox(10, msg, new Region(), undo);
+        HBox.setHgrow(toast.getChildren().get(1), Priority.ALWAYS);
 
-    HBox toast = new HBox(10, msg, spacer, undo);   // 🔧 CHỈ SỬA DÒNG NÀY
-    toast.setAlignment(Pos.CENTER_LEFT);        
-    toast.setPadding(new Insets(10, 16, 10, 16));
-    toast.setMaxWidth(300);   // ❗ KHÔNG CHO GIÃN NGANG
-    toast.setMaxHeight(40);
-    toast.setPickOnBounds(false);               // ❗ KHÔNG BẮT CHUỘT NGOÀI VÙNG
-    toast.setMouseTransparent(false);           // chỉ bắt chuột trong toast
+        toast.setPadding(new Insets(10));
+        toast.setAlignment(Pos.CENTER_LEFT);
+        toast.setStyle("""
+            -fx-background-color: #323232;
+            -fx-background-radius: 20;
+        """);
 
-    toast.setStyle("""
-        -fx-background-color: #323232;
-        -fx-background-radius: 20;
-    """);
+        StackPane.setAlignment(toast, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(toast, new Insets(0, 0, 40, 0));
+        rootPane.getChildren().add(toast);
 
-    msg.setStyle("-fx-text-fill: white;");
-    undo.setStyle("""
-        -fx-text-fill: orange;
-        -fx-background-color: transparent;
-    """);
+        undo.setOnAction(e -> {
+            nhanSuDAO.insert(lastDeleted);
+            loadNhanSuTheoTruong();
+            rootPane.getChildren().remove(toast);
+        });
 
-    StackPane.setAlignment(toast, javafx.geometry.Pos.BOTTOM_CENTER);
-    StackPane.setMargin(toast, new Insets(0, 0, 40, 0));
+        PauseTransition pt = new PauseTransition(Duration.seconds(3));
+        pt.setOnFinished(e -> rootPane.getChildren().remove(toast));
+        pt.play();
+    }
 
-    rootPane.getChildren().add(toast);
-
-    // UNDO
-    undo.setOnAction(e -> {
-        dao.insert(lastDeleted);
-        loadData();
-        rootPane.getChildren().remove(toast);
-    });
-
-    // TỰ ẨN
-    PauseTransition pt = new PauseTransition(Duration.seconds(3));
-    pt.setOnFinished(e -> rootPane.getChildren().remove(toast));
-    pt.play();
-}
-
-
+    // ================= CRUD =================
     private void suaNhanSu(NhanSu ns) {
-        Dialog<ButtonType> dialog = new Dialog<>();
-        dialog.setTitle("Sửa thông tin: " + ns.getMaNV());
 
-        TextField txtTen = new TextField(ns.getHoTen());
-        DatePicker dpNgay = new DatePicker(ns.getNgaySinh());
-        TextField txtLuong =
-            new TextField(String.valueOf(ns.getLuongCoBan()));
+    Dialog<ButtonType> dialog = new Dialog<>();
+    dialog.setTitle("Sửa nhân sự");
 
-        VBox box = new VBox(10,
-            new Label("Họ tên"), txtTen,
-            new Label("Ngày sinh"), dpNgay,
-            new Label("Lương cơ bản"), txtLuong
-        );
+    // ===== FIELDS CHUNG =====
+    TextField txtTen = new TextField(ns.getHoTen());
+    DatePicker dpNgaySinh = new DatePicker(ns.getNgaySinh());
+    TextField txtLuongCoBan = new TextField(
+            String.valueOf(ns.getLuongCoBan())
+    );
+
+    TextField txtEmail = new TextField(ns.getEmail());
+    txtEmail.setDisable(true); // ❌ KHÔNG CHO SỬA
+
+    ComboBox<Truong> cbo = new ComboBox<>(
+            FXCollections.observableArrayList(truongDAO.getAll())
+    );
+    cbo.setValue(ns.getTruong());
+
+    // ===== RIÊNG =====
+    TextField txtSoGio = new TextField();
+    TextField txtTienMoiGio = new TextField();
+    TextField txtPhuCap = new TextField();
+
+    if (ns instanceof GiangVien gv) {
+        txtSoGio.setText(String.valueOf(gv.getSoGioGiang()));
+        txtTienMoiGio.setText(String.valueOf(gv.getTienMoiGio()));
+    }
+
+    if (ns instanceof NhanVien nv) {
+        txtPhuCap.setText(String.valueOf(nv.getPhuCap()));
+    }
+
+    // ===== LAYOUT =====
+    GridPane grid = new GridPane();
+    grid.setHgap(10);
+    grid.setVgap(10);
+
+    int r = 0;
+    grid.add(new Label("Họ tên"), 0, r);
+    grid.add(txtTen, 1, r++);
+
+    grid.add(new Label("Ngày sinh"), 0, r);
+    grid.add(dpNgaySinh, 1, r++);
+
+    grid.add(new Label("Email"), 0, r);
+    grid.add(txtEmail, 1, r++);
+
+    grid.add(new Label("Lương cơ bản"), 0, r);
+    grid.add(txtLuongCoBan, 1, r++);
+
+    grid.add(new Label("Trường"), 0, r);
+    grid.add(cbo, 1, r++);
+
+    if (ns instanceof GiangVien) {
+        grid.add(new Label("Số giờ giảng"), 0, r);
+        grid.add(txtSoGio, 1, r++);
+
+        grid.add(new Label("Tiền mỗi giờ"), 0, r);
+        grid.add(txtTienMoiGio, 1, r++);
+    }
+
+    if (ns instanceof NhanVien) {
+        grid.add(new Label("Phụ cấp"), 0, r);
+        grid.add(txtPhuCap, 1, r++);
+    }
+
+    dialog.getDialogPane().setContent(grid);
+    dialog.getDialogPane().getButtonTypes()
+            .addAll(ButtonType.OK, ButtonType.CANCEL);
+
+    // ===== SAVE =====
+    dialog.showAndWait().ifPresent(bt -> {
+        if (bt != ButtonType.OK) return;
+
+        ns.setHoTen(txtTen.getText().trim());
+        ns.setNgaySinh(dpNgaySinh.getValue());
+        ns.setLuongCoBan(Double.parseDouble(txtLuongCoBan.getText()));
+        ns.setTruong(cbo.getValue());
 
         if (ns instanceof GiangVien gv) {
-            TextField soGio =
-                new TextField(String.valueOf(gv.getSoGioGiang()));
-            soGio.setId("soGio");
-
-            TextField tien =
-                new TextField(String.valueOf(gv.getTienMoiGio()));
-            tien.setId("tien");
-
-            box.getChildren().addAll(
-                new Label("Số giờ giảng"), soGio,
-                new Label("Tiền mỗi giờ"), tien
+            gv.setSoGioGiang(
+                    Integer.parseInt(txtSoGio.getText())
+            );
+            gv.setTienMoiGio(
+                    Double.parseDouble(txtTienMoiGio.getText())
             );
         }
 
         if (ns instanceof NhanVien nv) {
-            TextField phuCap =
-                new TextField(String.valueOf(nv.getPhuCap()));
-            phuCap.setId("phuCap");
-
-            box.getChildren().addAll(
-                new Label("Phụ cấp"), phuCap
+            nv.setPhuCap(
+                    Double.parseDouble(txtPhuCap.getText())
             );
         }
 
-        dialog.getDialogPane().setContent(box);
-        dialog.getDialogPane()
-              .getButtonTypes()
-              .addAll(ButtonType.OK, ButtonType.CANCEL);
+        nhanSuDAO.update(ns);
+        table.refresh();
+    });
+}
 
-        dialog.showAndWait().ifPresent(btn -> {
 
-            if (btn != ButtonType.OK) return;
-
-            try {
-                ns.setHoTen(txtTen.getText());
-                ns.setNgaySinh(dpNgay.getValue());
-                ns.setLuongCoBan(
-                    Double.parseDouble(txtLuong.getText())
-                );
-
-                if (ns instanceof GiangVien gv) {
-                    gv.setSoGioGiang(
-                        Integer.parseInt(
-                            ((TextField) box.lookup("#soGio")).getText()
-                        )
-                    );
-                    gv.setTienMoiGio(
-                        Double.parseDouble(
-                            ((TextField) box.lookup("#tien")).getText()
-                        )
-                    );
-                }
-
-                if (ns instanceof NhanVien nv) {
-                    nv.setPhuCap(
-                        Double.parseDouble(
-                            ((TextField) box.lookup("#phuCap")).getText()
-                        )
-                    );
-                }
-
-                dao.update(ns);
-                loadData();
-
-            } catch (Exception ex) {
-                new Alert(
-                    Alert.AlertType.ERROR,
-                    "Vui lòng nhập đúng định dạng số!"
-                ).show();
-            }
-        });
-    }
-
+    // ================= ADD =================
     @FXML
     public void themGiangVien() {
-        dao.insert(new GiangVien(
+
+        Truong t = cboTruong.getValue();
+        if (t == null) {
+            new Alert(Alert.AlertType.WARNING, "Chọn Trường trước!").show();
+            return;
+        }
+
+        GiangVien gv = new GiangVien(
             "Giảng viên mới",
-            java.time.LocalDate.of(1990, 1, 1),
-            "", "",
+            LocalDate.now(),
+            "",
             0,
             0.0
-        ));
-        loadData();
+        );
+
+        gv.setLuongCoBan(0.0);
+        gv.setTruong(t);
+
+        nhanSuDAO.insert(gv);
+        loadNhanSuTheoTruong();
     }
 
     @FXML
     public void themNhanVien() {
-        dao.insert(new NhanVien(
+
+        Truong t = cboTruong.getValue();
+        if (t == null) {
+            new Alert(Alert.AlertType.WARNING, "Chọn Trường trước!").show();
+            return;
+        }
+
+        NhanVien nv = new NhanVien(
             "Nhân viên mới",
-            java.time.LocalDate.of(1995, 1, 1),
-            "", "",
+            LocalDate.now(),
+            "",
             0.0
-        ));
-        loadData();
+        );
+
+        nv.setLuongCoBan(0.0);
+        nv.setTruong(t);
+
+        nhanSuDAO.insert(nv);
+        loadNhanSuTheoTruong();
     }
+
+
+
+    // ================= THÊM TRƯỜNG =================
+    @FXML
+    public void themTruong() {
+
+        Dialog<ButtonType> dialog = new Dialog<>();
+        dialog.setTitle("Thêm Trường");
+
+        TextField txtMa = new TextField();
+        TextField txtTen = new TextField();
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        grid.add(new Label("Mã Trường:"), 0, 0);
+        grid.add(txtMa, 1, 0);
+        grid.add(new Label("Tên Trường:"), 0, 1);
+        grid.add(txtTen, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+        dialog.getDialogPane().getButtonTypes()
+            .addAll(ButtonType.OK, ButtonType.CANCEL);
+
+        dialog.showAndWait().ifPresent(bt -> {
+            if (bt == ButtonType.OK &&
+                !txtMa.getText().isBlank() &&
+                !txtTen.getText().isBlank()) {
+
+                truongDAO.insert(
+                    txtMa.getText().trim(),
+                    txtTen.getText().trim()
+                );
+                loadTruong();
+            }
+        });
+    }
+
+    private void reloadTable() {
+
+    Truong t = cboTruong.getValue();
+    if (t == null) {
+        table.getItems().clear();
+        return;
+    }
+
+    // 1️⃣ Lấy toàn bộ nhân sự theo Trường
+    List<NhanSu> ds = nhanSuDAO.getByTruong(t.getId());
+
+    // 2️⃣ Lọc theo TAB
+    Tab tab = tabPane.getSelectionModel().getSelectedItem();
+
+    if (tab == tabGV) {
+        ds = ds.stream()
+                .filter(ns -> ns instanceof GiangVien)
+                .toList();
+    } else if (tab == tabNV) {
+        ds = ds.stream()
+                .filter(ns -> ns instanceof NhanVien)
+                .toList();
+    }
+    // tabAll → giữ nguyên
+
+    // 3️⃣ Đổ dữ liệu ra bảng
+    table.setItems(FXCollections.observableArrayList(ds));
+}
+
+
+
+@FXML
+public void tatCa() {
+    reloadTable();
+}
+
+@FXML private TableColumn<NhanSu, String> colEmailTruong;
+
+
+private List<NhanSu> filterByTab(List<NhanSu> ds) {
+
+    Tab tab = tabPane.getSelectionModel().getSelectedItem();
+
+    if (tab == tabGV) {
+        return ds.stream()
+                .filter(ns -> ns instanceof GiangVien)
+                .toList();
+    }
+
+    if (tab == tabNV) {
+        return ds.stream()
+                .filter(ns -> ns instanceof NhanVien)
+                .toList();
+    }
+
+    // tabAll
+    return ds;
+}
+
 }
