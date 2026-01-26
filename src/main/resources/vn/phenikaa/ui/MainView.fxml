@@ -54,42 +54,36 @@
                         onAction="#themGiangVien"
                         styleClass="btn-menu"/>
 
-                <Button text="➕ Thêm Nhân Viên"
+                <Button text="➕ Thêm Nhân Viên Hành Chính"
                         onAction="#themNhanVien"
+                        styleClass="btn-menu"/>
+                <Button text="➕ Thêm Nhân Viên Phụ Trợ"
+                        onAction="#themPhuTro"
                         styleClass="btn-menu"/>
             </VBox>
         </left>
 
         <!-- ================= CONTENT ================= -->
         <center>
-            <VBox spacing="10" styleClass="content">
+    <VBox spacing="10" styleClass="content">
+        <TabPane fx:id="tabPane">
+            <Tab fx:id="tabAll" text="Tất cả" closable="false"/>
+            <Tab fx:id="tabGV" text="Giảng viên" closable="false"/>
+            <Tab fx:id="tabNV" text="Nhân viên" closable="false"/>
+            <Tab fx:id="tabPT" text="Phụ trợ" closable="false"/> </TabPane>
 
-                <!-- ===== TAB ===== -->
-                <TabPane fx:id="tabPane">
-                    <Tab fx:id="tabAll" text="Tất cả" closable="false"/>
-                    <Tab fx:id="tabGV" text="Giảng viên" closable="false"/>
-                    <Tab fx:id="tabNV" text="Nhân viên" closable="false"/>
-                </TabPane>
-
-
-                <!-- ===== TABLE ===== -->
-                <TableView fx:id="table" prefHeight="520">
-
-                    <columns>
-                        <TableColumn fx:id="colMa" text="Mã NV" prefWidth="120"/>
-                        <TableColumn fx:id="colTen" text="Họ tên" prefWidth="200"/>
-                        <TableColumn fx:id="colEmailTruong"
-                                     text="Email trường"
-                                     prefWidth="250"/>
-                        <TableColumn fx:id="colLoai" text="Loại" prefWidth="120"/>
-                        <TableColumn fx:id="colLuong" text="Lương" prefWidth="120"/>
-                        <TableColumn fx:id="colAction" text="Thao tác" prefWidth="120"/>
-                    </columns>
-
-                </TableView>
-
-            </VBox>
-        </center>
+        <TableView fx:id="table" prefHeight="520">
+            <columns>
+                <TableColumn fx:id="colMa" text="Mã NV" prefWidth="120"/>
+                <TableColumn fx:id="colTen" text="Họ tên" prefWidth="200"/>
+                <TableColumn fx:id="colEmailTruong" text="Email trường" prefWidth="250"/>
+                <TableColumn fx:id="colLoai" text="Loại" prefWidth="120"/>
+                <TableColumn fx:id="colLuong" text="Lương" prefWidth="120"/>
+                <TableColumn fx:id="colAction" text="Thao tác" prefWidth="120"/>
+            </columns>
+        </TableView>
+    </VBox>
+</center>
 
     </BorderPane>
 </StackPane>
