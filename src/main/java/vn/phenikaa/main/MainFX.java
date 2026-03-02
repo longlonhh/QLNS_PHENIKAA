@@ -12,17 +12,15 @@ public class MainFX extends Application {
     public void start(Stage stage) throws Exception {
 
         FXMLLoader loader = new FXMLLoader(
-            getClass().getResource("/vn/phenikaa/ui/MainView.fxml")
-        );
+                getClass().getResource("/vn/phenikaa/ui/LoginView.fxml"));
 
         Parent root = loader.load();
 
-        Scene scene = new Scene(root, 1000, 650);
+        Scene scene = new Scene(root, 500, 400);
 
         // 🔥 GẮN CSS (QUAN TRỌNG)
         scene.getStylesheets().add(
-            getClass().getResource("/css/style.css").toExternalForm()
-        );
+                getClass().getResource("/css/style.css").toExternalForm());
 
         stage.setTitle("QUẢN LÝ NHÂN SỰ - PHENIKAA");
         stage.setScene(scene);

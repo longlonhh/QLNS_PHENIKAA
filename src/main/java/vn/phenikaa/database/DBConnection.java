@@ -5,11 +5,11 @@ import java.sql.DriverManager;
 
 public class DBConnection {
 
-    private static final String URL =
-        "jdbc:mysql://localhost:3306/qlns_phenikaa"
-      + "?useSSL=false"
-      + "&allowPublicKeyRetrieval=true"
-      + "&serverTimezone=Asia/Ho_Chi_Minh";
+    private static final String URL = "jdbc:mysql://localhost:3306/qlns_phenikaa"
+            + "?useSSL=false"
+            + "&allowPublicKeyRetrieval=true"
+            + "&serverTimezone=Asia/Ho_Chi_Minh"
+            + "&characterEncoding=utf8";
 
     private static final String USER = "root";
     private static final String PASS = "04112005";

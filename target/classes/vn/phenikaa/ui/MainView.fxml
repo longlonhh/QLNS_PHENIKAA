@@ -2,88 +2,93 @@
 
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
 
 <StackPane xmlns:fx="http://javafx.com/fxml"
            fx:id="rootPane"
            fx:controller="vn.phenikaa.controller.MainController"
            stylesheets="@main.css">
 
-    <BorderPane prefWidth="1000" prefHeight="650">
+    <BorderPane fx:id="mainBorder">
 
         <!-- ================= HEADER ================= -->
         <top>
-            <HBox spacing="12"
-                  alignment="CENTER_LEFT"
-                  styleClass="header">
+            <HBox alignment="CENTER_LEFT" spacing="20" styleClass="header">
+                <padding>
+                    <Insets top="0" right="25" bottom="0" left="25"/>
+                </padding>
 
-                <Label text="QUẢN LÝ NHÂN SỰ"
-                       styleClass="title"/>
-
-                <ComboBox fx:id="cboTruong"
-                          promptText="Chọn Trường"
-                          prefWidth="220"/>
+                <Label styleClass="title" text="PHENIKAA HRM"/>
 
                 <Region HBox.hgrow="ALWAYS"/>
 
-                <TextField fx:id="txtSearch"
-                           promptText="Nhập mã NV hoặc họ tên"
-                           styleClass="search-field"/>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label style="-fx-text-fill: #64748b; -fx-font-weight: bold;" text="Đơn vị:"/>
+                    <ComboBox fx:id="cboDonVi" onAction="#locTheoDonVi" prefWidth="250" promptText="Lọc theo đơn vị..."/>
+                </HBox>
 
-                <Button text="Tìm"
-                        onAction="#search"
-                        styleClass="btn-primary"/>
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <TextField fx:id="txtSearch" promptText="Tìm mã NV, họ tên..." styleClass="search-field"/>
+                    <Button onAction="#search" styleClass="btn-primary" text="Tìm kiếm"/>
+                </HBox>
 
-                <Button text="Tất cả"
-                        onAction="#tatCa"
-                        styleClass="btn-secondary"/>
+                <Button onAction="#handleLogout" styleClass="btn-danger" text="Đăng xuất"/>
             </HBox>
         </top>
 
         <!-- ================= SIDEBAR ================= -->
         <left>
-            <VBox spacing="12" styleClass="sidebar">
+            <VBox styleClass="sidebar">
+                <Label styleClass="sidebar-title" text="QUẢN TRỊ HỆ THỐNG"/>
+                <Button fx:id="btnThemDonVi" onAction="#themDonVi" styleClass="btn-menu" text="📁  Quản lý Đơn vị"/>
+                <Button fx:id="btnThemNguoiDung" onAction="#themNguoiDung" styleClass="btn-menu" text="👤  Người dùng"/>
 
-                <Label text="CHỨC NĂNG"
-                       styleClass="sidebar-title"/>
+                <Region prefHeight="20"/>
 
-                <Button text="➕ Thêm Trường"
-                        onAction="#themTruong"
-                        styleClass="btn-menu"/>
+                <Label styleClass="sidebar-title" text="NHÂN SỰ &amp; GIẢNG VIÊN"/>
+                <Button fx:id="btnThemGV" onAction="#themGiangVien" styleClass="btn-menu" text="👨‍🏫  Thêm Giảng viên"/>
+                <Button fx:id="btnThemNV" onAction="#themNhanVien" styleClass="btn-menu" text="💼  Nhân viên Hành chính"/>
+                <Button fx:id="btnThemPT" onAction="#themPhuTro" styleClass="btn-menu" text="🛠️  Nhân viên Phụ trợ"/>
 
-                <Button text="➕ Thêm Giảng Viên"
-                        onAction="#themGiangVien"
-                        styleClass="btn-menu"/>
+                <Region VBox.vgrow="ALWAYS"/>
 
-                <Button text="➕ Thêm Nhân Viên Hành Chính"
-                        onAction="#themNhanVien"
-                        styleClass="btn-menu"/>
-                <Button text="➕ Thêm Nhân Viên Phụ Trợ"
-                        onAction="#themPhuTro"
-                        styleClass="btn-menu"/>
+                <Button onAction="#doiMatKhau" styleClass="btn-secondary" text="🔑 Đổi mật khẩu" maxWidth="Infinity"/>
             </VBox>
         </left>
 
         <!-- ================= CONTENT ================= -->
         <center>
-    <VBox spacing="10" styleClass="content">
-        <TabPane fx:id="tabPane">
-            <Tab fx:id="tabAll" text="Tất cả" closable="false"/>
-            <Tab fx:id="tabGV" text="Giảng viên" closable="false"/>
-            <Tab fx:id="tabNV" text="Nhân viên" closable="false"/>
-            <Tab fx:id="tabPT" text="Phụ trợ" closable="false"/> </TabPane>
+            <VBox spacing="20" styleClass="content">
+                <HBox alignment="CENTER_LEFT">
+                    <TabPane fx:id="tabPane" HBox.hgrow="ALWAYS">
+                        <Tab fx:id="tabAll" closable="false" text="Tất cả nhân sự"/>
+                        <Tab fx:id="tabGV" closable="false" text="Giảng viên"/>
+                        <Tab fx:id="tabNV" closable="false" text="Hành chính"/>
+                        <Tab fx:id="tabPT" closable="false" text="Phụ trợ"/>
+                    </TabPane>
+                    <Button onAction="#tatCa" styleClass="btn-secondary" text="Làm mới dữ liệu"/>
+                </HBox>
 
-        <TableView fx:id="table" prefHeight="520">
-            <columns>
-                <TableColumn fx:id="colMa" text="Mã NV" prefWidth="120"/>
-                <TableColumn fx:id="colTen" text="Họ tên" prefWidth="200"/>
-                <TableColumn fx:id="colEmailTruong" text="Email trường" prefWidth="250"/>
-                <TableColumn fx:id="colLoai" text="Loại" prefWidth="120"/>
-                <TableColumn fx:id="colLuong" text="Lương" prefWidth="120"/>
-                <TableColumn fx:id="colAction" text="Thao tác" prefWidth="120"/>
-            </columns>
-        </TableView>
-    </VBox>
-</center>
+                <StackPane VBox.vgrow="ALWAYS">
+                    <TableView fx:id="tblMain">
+                        <columns>
+                            <TableColumn fx:id="colMaNV" minWidth="80" prefWidth="90" text="Mã NV"/>
+                            <TableColumn fx:id="colHoTen" minWidth="150" prefWidth="180" text="Họ và Tên"/>
+                            <TableColumn fx:id="colNgaySinh" minWidth="100" prefWidth="110" text="Ngày sinh"/>
+                            <TableColumn fx:id="colEmail" minWidth="200" prefWidth="250" text="Email Phenikaa"/>
+                            <TableColumn fx:id="colDonVi" minWidth="140" prefWidth="160" text="Phòng/Khoa"/>
+                            <TableColumn fx:id="colChucVu" minWidth="120" prefWidth="140" text="Chức vụ"/>
+                            <TableColumn fx:id="colLuongCB" minWidth="110" prefWidth="120" text="Lương cơ bản"/>
+                            <TableColumn fx:id="colTongLuong" minWidth="120" prefWidth="140" text="Tổng nhận"/>
+                            <TableColumn fx:id="colAction" minWidth="120" prefWidth="130" text="Thao tác"/>
+                        </columns>
+                        <columnResizePolicy>
+                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                        </columnResizePolicy>
+                    </TableView>
+                </StackPane>
+            </VBox>
+        </center>
 
     </BorderPane>
 </StackPane>
